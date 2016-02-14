@@ -9,12 +9,12 @@ interface Ecosystem {
 	void AddInteraction(string predator, string prey, float interactionRate, float conversionEfficiency);
 	void AddInteraction(string predator, string prey, float a_0, float e, float s, float k);
 
-	void IntegrateFirstOrder(float timestep);
-	void IntegrateRungeKutta(float timestep);
+	void Integrate(float timestep);
 
 	float GetPopulation(string name);
-	Dictionary<string, float> GetPopulations(List<string> names);
 	Dictionary<string, float> GetAllPopulations();
+
+	float GetInteraction(string predator, string prey);
 
 	void SetPopulation(string name, float population);
 	void ChangePopulation(string name, float amount);
