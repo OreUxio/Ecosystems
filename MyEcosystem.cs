@@ -40,13 +40,14 @@ class MyEcosystem : Ecosystem {
 		if (system.ContainsKey(name)) {
 			throw new System.ArgumentException("system already contains a species with that name!");
 		}
-		system.Add(name, new Species(population, birthRate, selfInteraction));
+		Species newSpecies = new Species(population, birthRate, selfInteraction);
+		system.Add(name, newSpecies);
 	}
 	public void AddSpecies(string name, float m_i, float b_0, float d_0, float a_ii0, float gamma=0.5f, float beta=0.75f, float population=0f) {
 		throw new System.AccessViolationException("function not implemented!");
 	}
 	public void RemoveSpecies(string name) {
-		//TODO: remove all links instead of this
+		//TODO: remove all links instead of this, or just ignore this function completely cuz it's dum
 		if (!system.ContainsKey(name)) {
 			throw new System.ArgumentException("system does not contain a species with that name!");
 		}
@@ -60,7 +61,7 @@ class MyEcosystem : Ecosystem {
 		throw new System.AccessViolationException("function not implemented!");
 	}
 
-	public void IntegrateFirstOrder(float timestep) {
+	public void Integrate(float timestep) {
 		// get a record of the current populations that will be written back later
 		Dictionary<Species, float> newPopulations = new Dictionary<Species, float>();
 		foreach (Species species in system.Values) {
@@ -83,20 +84,9 @@ class MyEcosystem : Ecosystem {
 			species.population += newPopulations[species] * timestep;
 		}
 	}
-	public void IntegrateRungeKutta(float timestep) {
-		//TODO: lol
-		IntegrateFirstOrder(timestep);
-	}
 
 	public float GetPopulation(string name) {
 		return system[name].population;
-	}
-	public Dictionary<string, float> GetPopulations(List<string> names) {
-		Dictionary<string, float> populations = new Dictionary<string, float>();
-		foreach (string name in names) {
-			populations.Add(name, system[name].population);
-		}
-		return populations;
 	}
 	public Dictionary<string, float> GetAllPopulations() {
 		Dictionary<string, float> populations = new Dictionary<string, float>();
@@ -105,7 +95,9 @@ class MyEcosystem : Ecosystem {
 		}
 		return populations;
 	}
-
+	public float GetInteraction(string predator, string prey) {
+		throw new System.AccessViolationException("function not implemented!");
+	}
 	public void SetPopulation(string name, float population) {
 		system[name].population = population;
 	}
