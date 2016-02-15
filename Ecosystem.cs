@@ -14,7 +14,7 @@ interface Ecosystem {
 	float GetPopulation(string name);
 	Dictionary<string, float> GetAllPopulations();
 
-	float GetInteraction(string predator, string prey);
+	float GetInteraction(string species, string other);
 
 	void SetPopulation(string name, float population);
 	void ChangePopulation(string name, float amount);
