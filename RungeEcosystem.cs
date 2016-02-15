@@ -7,6 +7,8 @@ class RungeEcosystem : Ecosystem {
 		public Species otherSpecies;
 		public float rate;
 		public float transferredAmount;
+
+		public float k_1, k_2, k_3, y_plus_k1, y_plus_k2, y_plus_k3; // y_plus_k3 isn't really needed but it makes the code a lot clearer lol
 		
 		public Interaction(Species _otherSpecies, float _rate) {
 			otherSpecies = _otherSpecies;
@@ -19,7 +21,7 @@ class RungeEcosystem : Ecosystem {
 		public float population;
 		public float birthRate;
 
-		public float k_1, k_2, k_3, y_plus_k1, y_plus_k2, y_plus_k3; // plus 3 not necessary but makes it more readable
+		public float k_1, k_2, k_3, y_plus_k1, y_plus_k2, y_plus_k3;
 		
 		public Species(string name, float _population, float _birthRate, float _selfInteraction) {
 			interactions = new Dictionary<string, Interaction>();
@@ -72,6 +74,52 @@ class RungeEcosystem : Ecosystem {
 		foreach (Species species in system.Values) {
 			species.k_1 = species.birthRate * species.population;
 			foreach (Interaction interaction in species.interactions.Values) {
+				interaction.k_1 = interaction.rate * interaction.otherSpecies.population * species.population;
+				interaction.y_plus_k1 = species.population + h2*interaction.k_1;
+			}
+			species.y_plus_k1 = species.population + h2*species.k_1;
+		}
+		// k_2
+		foreach (Species species in system.Values) {
+			species.k_2 = species.birthRate * species.y_plus_k1;
+			foreach (Interaction interaction in species.interactions.Values) {
+				interaction.k_2 = interaction.rate * interaction.otherSpecies.y_plus_k1 * interaction.y_plus_k1;
+				interaction.y_plus_k2 = species.population + h2*interaction.k_2;
+			}
+			species.y_plus_k2 = species.population + h2*species.k_2;
+		}
+		// k_3
+		foreach (Species species in system.Values) {
+			species.k_3 = species.birthRate * species.y_plus_k2;
+			foreach (Interaction interaction in species.interactions.Values) {
+				interaction.k_3 = interaction.rate * interaction.otherSpecies.y_plus_k2 * interaction.y_plus_k2;
+				interaction.y_plus_k3 = species.population + h*interaction.k_3;
+			}
+			species.y_plus_k3 = species.population + h*species.k_3;
+		}
+		// k_4
+		foreach (Species species in system.Values) {
+			float k_4_birth = species.birthRate * species.y_plus_k3;
+			float totalDifference = species.k_1 + 2*species.k_2 + 2*species.k_3 + k_4_birth;
+
+			foreach (Interaction interaction in species.interactions.Values) {
+				float k_4_interaction = interaction.rate * interaction.otherSpecies.y_plus_k3 * interaction.y_plus_k3;
+				float difference = interaction.k_1 + 2*interaction.k_2 + 2*interaction.k_3 + k_4_interaction;
+				interaction.transferredAmount += h6*difference;
+				totalDifference += difference;
+			}
+			// h/6(k_1 + 2k_2 + 2k_3 + k_4)
+			species.population += h6*(totalDifference);
+		}
+	}/*
+	public void Integrate(float timestep) {
+		float h = timestep;
+		float h2 = timestep / 2f;
+		float h6 = timestep / 6f;
+		// k_1
+		foreach (Species species in system.Values) {
+			species.k_1 = species.birthRate * species.population;
+			foreach (Interaction interaction in species.interactions.Values) {
 				species.k_1 += interaction.rate * interaction.otherSpecies.population * species.population;
 			}
 			species.y_plus_k1 = species.population + h2*species.k_1;
@@ -101,7 +149,7 @@ class RungeEcosystem : Ecosystem {
 			// h/6(k_1 + 2k_2 + 2k_3 + k_4)
 			species.population += h6*(species.k_1 + 2f*species.k_2 + 2f*species.k_3 + k_4);
 		}
-	}
+	}*/
 	
 	public float GetPopulation(string name) {
 		return system[name].population;
@@ -120,8 +168,8 @@ class RungeEcosystem : Ecosystem {
 		}
 		return populations;
 	}
-	public float GetInteraction(string predator, string prey) {
-		throw new System.AccessViolationException("function not implemented!");
+	public float GetInteraction(string species, string other) {
+		return system[species].interactions[other].transferredAmount;
 	}
 	
 	public void SetPopulation(string name, float population) {
